@@ -11,6 +11,7 @@ import AddMemberModal from '../components/projects/AddMemberModal.jsx';
 import EditProjectModal from '../components/projects/EditProjectModal.jsx';
 import TicketList from '../components/tickets/TicketList.jsx';
 import CreateTicketModal from '../components/tickets/CreateTicketModal.jsx';
+import KanbanBoard from '../components/kanban/KanbanBoard.jsx';
 import {
   Users,
   UserPlus,
@@ -22,6 +23,7 @@ import {
   Calendar,
   Layers,
   Plus,
+  Kanban,
 } from 'lucide-react';
 
 export default function ProjectDetailPage() {
@@ -33,7 +35,8 @@ export default function ProjectDetailPage() {
   const { tickets, loading: ticketsLoading } = useSelector((state) => state.tickets);
   const { user } = useSelector((state) => state.auth);
 
-  const [activeTab, setActiveTab] = useState('tickets');
+  const [activeTab, setActiveTab] = useState('board');
+  const [createTicketStatus, setCreateTicketStatus] = useState('todo');
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
@@ -180,6 +183,25 @@ export default function ProjectDetailPage() {
       <div className="border-b border-[#F5E6D3] flex items-center gap-6">
         <button
           type="button"
+          onClick={() => setActiveTab('board')}
+          className={`pb-3 text-sm font-semibold transition-colors relative flex items-center gap-2 ${
+            activeTab === 'board'
+              ? 'text-[#C2410C]'
+              : 'text-[#78716C] hover:text-[#292524]'
+          }`}
+        >
+          <Kanban className="w-4 h-4" />
+          <span>Board</span>
+          <span className="px-2 py-0.5 rounded-full text-xs bg-[#FAF5EE] text-[#78716C]">
+            {tickets.length}
+          </span>
+          {activeTab === 'board' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F97316] rounded-full" />
+          )}
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('tickets')}
           className={`pb-3 text-sm font-semibold transition-colors relative flex items-center gap-2 ${
             activeTab === 'tickets'
@@ -188,10 +210,7 @@ export default function ProjectDetailPage() {
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Tickets</span>
-          <span className="px-2 py-0.5 rounded-full text-xs bg-[#FAF5EE] text-[#78716C]">
-            {tickets.length}
-          </span>
+          <span>List</span>
           {activeTab === 'tickets' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F97316] rounded-full" />
           )}
@@ -232,7 +251,28 @@ export default function ProjectDetailPage() {
         </button>
       </div>
 
-      {/* Tab Content: Tickets */}
+      {/* Tab Content: Kanban Board */}
+      {activeTab === 'board' && (
+        <div>
+          {ticketsLoading && tickets.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-[#78716C]">
+              <Loader2 className="w-8 h-8 animate-spin text-[#F97316] mb-3" />
+              <p className="text-sm">Loading board...</p>
+            </div>
+          ) : (
+            <KanbanBoard
+              tickets={tickets}
+              canManage={canCreateTicket}
+              onAddTicket={(status) => {
+                setCreateTicketStatus(status);
+                setCreateTicketOpen(true);
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Tab Content: Tickets List */}
       {activeTab === 'tickets' && (
         <div>
           {ticketsLoading && tickets.length === 0 ? (
@@ -395,6 +435,7 @@ export default function ProjectDetailPage() {
         onClose={() => setCreateTicketOpen(false)}
         projectId={projectId}
         projectMembers={currentProject.teamMembers || []}
+        initialStatus={createTicketStatus}
       />
 
       <AddMemberModal

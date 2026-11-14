@@ -3,19 +3,35 @@ import { useDispatch } from 'react-redux';
 import { createTicket } from '../../redux/slices/ticketSlice.js';
 import { X, Loader2, PlusCircle } from 'lucide-react';
 
-export default function CreateTicketModal({ isOpen, onClose, projectId, projectMembers = [] }) {
+export default function CreateTicketModal({
+  isOpen,
+  onClose,
+  projectId,
+  projectMembers = [],
+  initialStatus = 'todo',
+}) {
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium',
-    status: 'todo',
+    status: initialStatus,
     assigneeId: '',
   });
 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Sync initial status when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData((prev) => ({
+        ...prev,
+        status: initialStatus || 'todo',
+      }));
+    }
+  }, [isOpen, initialStatus]);
 
   if (!isOpen) return null;
 

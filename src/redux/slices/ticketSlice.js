@@ -3,9 +3,23 @@ import api from '../../https/axios.js';
 
 const initialState = {
   tickets: [],
+  userTickets: [],
   loading: false,
   error: null,
 };
+
+// Fetch tickets across accessible projects for the current user
+export const fetchUserTickets = createAsyncThunk(
+  'tickets/fetchUserTickets',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/tickets', { params });
+      return response.data.tickets;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch tickets');
+    }
+  }
+);
 
 // Fetch tickets for a specific project
 export const fetchTicketsByProject = createAsyncThunk(
@@ -71,9 +85,45 @@ const ticketSlice = createSlice({
     clearTicketError: (state) => {
       state.error = null;
     },
+    optimisticUpdateTicketStatus: (state, action) => {
+      const { ticketId, status } = action.payload;
+      const ticket = state.tickets.find((t) => t._id === ticketId);
+      if (ticket) {
+        ticket.status = status;
+      }
+      const userTicket = state.userTickets.find((t) => t._id === ticketId);
+      if (userTicket) {
+        userTicket.status = status;
+      }
+    },
+    rollbackTicketStatus: (state, action) => {
+      const { ticketId, previousStatus } = action.payload;
+      const ticket = state.tickets.find((t) => t._id === ticketId);
+      if (ticket) {
+        ticket.status = previousStatus;
+      }
+      const userTicket = state.userTickets.find((t) => t._id === ticketId);
+      if (userTicket) {
+        userTicket.status = previousStatus;
+      }
+    },
   },
   extraReducers: (builder) => {
-    // Fetch tickets
+    // Fetch user tickets across projects
+    builder.addCase(fetchUserTickets.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchUserTickets.fulfilled, (state, action) => {
+      state.loading = false;
+      state.userTickets = action.payload;
+    });
+    builder.addCase(fetchUserTickets.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    // Fetch tickets for single project
     builder.addCase(fetchTicketsByProject.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -116,6 +166,11 @@ const ticketSlice = createSlice({
   },
 });
 
-export const { clearTickets, clearTicketError } = ticketSlice.actions;
+export const {
+  clearTickets,
+  clearTicketError,
+  optimisticUpdateTicketStatus,
+  rollbackTicketStatus,
+} = ticketSlice.actions;
 
 export default ticketSlice.reducer;
