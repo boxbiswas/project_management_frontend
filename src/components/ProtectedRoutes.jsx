@@ -1,8 +1,8 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, NavLink, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice.js';
-import { LogOut, Layout } from 'lucide-react';
+import { LogOut, Layout, FolderKanban, LayoutDashboard } from 'lucide-react';
 
 // Route guard requiring authenticated user state
 export default function ProtectedRoutes() {
@@ -30,11 +30,45 @@ export default function ProtectedRoutes() {
     <div className="min-h-screen flex flex-col bg-[#FFFBF5] text-[#292524]">
       {/* Top navigation header */}
       <header className="h-16 bg-white border-b border-[#F5E6D3] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[10px] bg-[#F97316] flex items-center justify-center text-white shadow-sm">
-            <Layout className="w-5 h-5" />
-          </div>
-          <span className="font-bold text-xl tracking-tight text-[#292524]">BugBoard</span>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[10px] bg-[#F97316] flex items-center justify-center text-white shadow-sm">
+              <Layout className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-[#292524]">BugBoard</span>
+          </Link>
+
+          {/* Primary Navigation Links */}
+          <nav className="hidden sm:flex items-center gap-1.5 ml-2">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-[#FFF7ED] text-[#C2410C]'
+                    : 'text-[#78716C] hover:text-[#292524] hover:bg-[#FFF7ED]'
+                }`
+              }
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Dashboard</span>
+            </NavLink>
+
+            <NavLink
+              to="/projects"
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-[#FFF7ED] text-[#C2410C]'
+                    : 'text-[#78716C] hover:text-[#292524] hover:bg-[#FFF7ED]'
+                }`
+              }
+            >
+              <FolderKanban className="w-3.5 h-3.5" />
+              <span>Projects</span>
+            </NavLink>
+          </nav>
         </div>
 
         <div className="flex items-center gap-4">
