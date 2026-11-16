@@ -4,7 +4,12 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import DraggableTicketCard from './DraggableTicketCard.jsx';
 import { Clock, Plus } from 'lucide-react';
 
-export default function InProgressColumn({ tickets = [], onAddTicket, canManage }) {
+export default function InProgressColumn({
+  tickets = [],
+  onAddTicket,
+  canManage,
+  onSelectTicket,
+}) {
   // Droppable container hook for in-progress column
   const { setNodeRef, isOver } = useDroppable({
     id: 'in_progress',
@@ -51,7 +56,12 @@ export default function InProgressColumn({ tickets = [], onAddTicket, canManage 
       <div className="flex-1 space-y-2.5 overflow-y-auto min-h-[140px] p-0.5">
         <SortableContext items={ticketIds} strategy={verticalListSortingStrategy}>
           {tickets.map((ticket) => (
-            <DraggableTicketCard key={ticket._id} ticket={ticket} disabled={!canManage} />
+            <DraggableTicketCard
+              key={ticket._id}
+              ticket={ticket}
+              disabled={!canManage}
+              onSelectTicket={onSelectTicket}
+            />
           ))}
         </SortableContext>
 

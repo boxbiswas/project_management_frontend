@@ -2,12 +2,25 @@ import React, { useState } from 'react';
 import TicketCard from './TicketCard.jsx';
 import { Plus, CheckCircle2, Circle, Loader, Layers } from 'lucide-react';
 
-export default function TicketList({ tickets = [], onOpenCreateModal, canCreateTicket }) {
-  const [statusFilter, setStatusFilter] = useState('all');
+export default function TicketList({
+  tickets = [],
+  onOpenCreateModal,
+  canCreateTicket,
+  onSelectTicket,
+  statusFilter: controlledStatus,
+  onStatusChange,
+}) {
+  const [internalStatus, setInternalStatus] = useState('all');
 
-  const filteredTickets = statusFilter === 'all'
+  const currentStatus = controlledStatus !== undefined ? controlledStatus : internalStatus;
+  const setStatus = onStatusChange || setInternalStatus;
+
+  // Filter by status if not already controlled externally
+  const displayedTickets = controlledStatus !== undefined
     ? tickets
-    : tickets.filter((t) => t.status === statusFilter);
+    : currentStatus === 'all'
+    ? tickets
+    : tickets.filter((t) => t.status === currentStatus);
 
   const todoCount = tickets.filter((t) => t.status === 'todo').length;
   const inProgressCount = tickets.filter((t) => t.status === 'in_progress').length;
@@ -15,14 +28,14 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
 
   return (
     <div className="space-y-4">
-      {/* List controls and status tabs */}
+      {/* Quick status pill tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
             type="button"
-            onClick={() => setStatusFilter('all')}
+            onClick={() => setStatus('all')}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 border ${
-              statusFilter === 'all'
+              currentStatus === 'all'
                 ? 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]'
                 : 'bg-white text-[#78716C] border-[#E7D5BF] hover:bg-[#FFF7ED]'
             }`}
@@ -33,9 +46,9 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
 
           <button
             type="button"
-            onClick={() => setStatusFilter('todo')}
+            onClick={() => setStatus('todo')}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 border ${
-              statusFilter === 'todo'
+              currentStatus === 'todo'
                 ? 'bg-[#F0EBE4] text-[#44403C] border-[#D6D3D1]'
                 : 'bg-white text-[#78716C] border-[#E7D5BF] hover:bg-[#F5F1EC]'
             }`}
@@ -46,9 +59,9 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
 
           <button
             type="button"
-            onClick={() => setStatusFilter('in_progress')}
+            onClick={() => setStatus('in_progress')}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 border ${
-              statusFilter === 'in_progress'
+              currentStatus === 'in_progress'
                 ? 'bg-[#E0F2FE] text-[#075985] border-[#BAE6FD]'
                 : 'bg-white text-[#78716C] border-[#E7D5BF] hover:bg-[#F0F9FF]'
             }`}
@@ -59,9 +72,9 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
 
           <button
             type="button"
-            onClick={() => setStatusFilter('done')}
+            onClick={() => setStatus('done')}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 border ${
-              statusFilter === 'done'
+              currentStatus === 'done'
                 ? 'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0]'
                 : 'bg-white text-[#78716C] border-[#E7D5BF] hover:bg-[#F0FDF4]'
             }`}
@@ -84,17 +97,17 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
       </div>
 
       {/* Empty State */}
-      {filteredTickets.length === 0 && (
+      {displayedTickets.length === 0 && (
         <div className="py-14 px-4 bg-white rounded-2xl border border-[#F5E6D3] text-center max-w-sm mx-auto my-6 shadow-sm">
           <div className="w-14 h-14 rounded-full bg-[#FFEDD5] text-[#F97316] flex items-center justify-center mx-auto mb-3.5">
             <Layers className="w-7 h-7" />
           </div>
           <h3 className="text-base font-bold text-[#292524] mb-1">
-            {statusFilter === 'all' ? 'No tickets yet' : `No ${statusFilter.replace('_', ' ')} tickets`}
+            {currentStatus === 'all' ? 'No tickets match criteria' : `No ${currentStatus.replace('_', ' ')} tickets`}
           </h3>
           <p className="text-xs text-[#78716C] mb-5 leading-relaxed">
-            {statusFilter === 'all'
-              ? 'Add a ticket to start tracking bugs, issues, and work items in this project.'
+            {currentStatus === 'all'
+              ? 'Try modifying your search or dropdown filters to find tickets.'
               : 'Try selecting a different status filter or create a new ticket.'}
           </p>
           {canCreateTicket && (
@@ -111,10 +124,14 @@ export default function TicketList({ tickets = [], onOpenCreateModal, canCreateT
       )}
 
       {/* Ticket Grid */}
-      {filteredTickets.length > 0 && (
+      {displayedTickets.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTickets.map((ticket) => (
-            <TicketCard key={ticket._id} ticket={ticket} />
+          {displayedTickets.map((ticket) => (
+            <TicketCard
+              key={ticket._id}
+              ticket={ticket}
+              onClick={() => onSelectTicket && onSelectTicket(ticket)}
+            />
           ))}
         </div>
       )}

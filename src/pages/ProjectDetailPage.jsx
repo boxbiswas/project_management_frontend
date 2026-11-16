@@ -11,6 +11,8 @@ import AddMemberModal from '../components/projects/AddMemberModal.jsx';
 import EditProjectModal from '../components/projects/EditProjectModal.jsx';
 import TicketList from '../components/tickets/TicketList.jsx';
 import CreateTicketModal from '../components/tickets/CreateTicketModal.jsx';
+import TicketDetailModal from '../components/tickets/TicketDetailModal.jsx';
+import TicketFilterBar from '../components/tickets/TicketFilterBar.jsx';
 import KanbanBoard from '../components/kanban/KanbanBoard.jsx';
 import {
   Users,
@@ -37,9 +39,55 @@ export default function ProjectDetailPage() {
 
   const [activeTab, setActiveTab] = useState('board');
   const [createTicketStatus, setCreateTicketStatus] = useState('todo');
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
+
+  // Search and filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [assigneeFilter, setAssigneeFilter] = useState('all');
+
+  // Filter tickets dynamically by status, priority, assignee, and search
+  const filteredTickets = React.useMemo(() => {
+    return tickets.filter((t) => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) {
+        return false;
+      }
+      if (priorityFilter !== 'all' && t.priority !== priorityFilter) {
+        return false;
+      }
+      if (assigneeFilter !== 'all') {
+        if (assigneeFilter === 'unassigned') {
+          if (t.assigneeId) return false;
+        } else {
+          const aId = t.assigneeId?._id || t.assigneeId;
+          if (!aId || aId.toString() !== assigneeFilter.toString()) {
+            return false;
+          }
+        }
+      }
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const titleMatch = t.title?.toLowerCase().includes(query);
+        const descMatch = t.description?.toLowerCase().includes(query);
+        if (!titleMatch && !descMatch) return false;
+      }
+      return true;
+    });
+  }, [tickets, statusFilter, priorityFilter, assigneeFilter, searchQuery]);
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setPriorityFilter('all');
+    setAssigneeFilter('all');
+  };
+
+  // Sync selected ticket with latest tickets state
+  const currentSelectedTicket = tickets.find((t) => t._id === selectedTicket?._id) || selectedTicket;
 
   useEffect(() => {
     if (projectId) {
@@ -251,6 +299,24 @@ export default function ProjectDetailPage() {
         </button>
       </div>
 
+      {/* Filter and Search Bar for Board & List views */}
+      {(activeTab === 'board' || activeTab === 'tickets') && (
+        <TicketFilterBar
+          search={searchQuery}
+          onSearchChange={setSearchQuery}
+          status={statusFilter}
+          onStatusChange={setStatusFilter}
+          priority={priorityFilter}
+          onPriorityChange={setPriorityFilter}
+          assignee={assigneeFilter}
+          onAssigneeChange={setAssigneeFilter}
+          projectMembers={currentProject.teamMembers || []}
+          totalTickets={tickets.length}
+          filteredCount={filteredTickets.length}
+          onClearFilters={handleClearFilters}
+        />
+      )}
+
       {/* Tab Content: Kanban Board */}
       {activeTab === 'board' && (
         <div>
@@ -261,8 +327,9 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <KanbanBoard
-              tickets={tickets}
+              tickets={filteredTickets}
               canManage={canCreateTicket}
+              onSelectTicket={(ticket) => setSelectedTicket(ticket)}
               onAddTicket={(status) => {
                 setCreateTicketStatus(status);
                 setCreateTicketOpen(true);
@@ -282,9 +349,12 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <TicketList
-              tickets={tickets}
+              tickets={filteredTickets}
               onOpenCreateModal={() => setCreateTicketOpen(true)}
               canCreateTicket={canCreateTicket}
+              onSelectTicket={(ticket) => setSelectedTicket(ticket)}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
             />
           )}
         </div>
@@ -436,6 +506,14 @@ export default function ProjectDetailPage() {
         projectId={projectId}
         projectMembers={currentProject.teamMembers || []}
         initialStatus={createTicketStatus}
+      />
+
+      <TicketDetailModal
+        isOpen={!!selectedTicket}
+        onClose={() => setSelectedTicket(null)}
+        ticket={currentSelectedTicket}
+        projectMembers={currentProject.teamMembers || []}
+        canManage={canCreateTicket}
       />
 
       <AddMemberModal

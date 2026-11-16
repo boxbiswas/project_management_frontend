@@ -3,7 +3,11 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import KanbanCard from './KanbanCard.jsx';
 
-export default function DraggableTicketCard({ ticket, disabled = false }) {
+export default function DraggableTicketCard({
+  ticket,
+  disabled = false,
+  onSelectTicket,
+}) {
   const {
     attributes,
     listeners,
@@ -33,7 +37,11 @@ export default function DraggableTicketCard({ ticket, disabled = false }) {
       {...listeners}
       className={`touch-manipulation ${disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
     >
-      <KanbanCard ticket={ticket} isGhost={isDragging} />
+      <KanbanCard
+        ticket={ticket}
+        isGhost={isDragging}
+        onClick={() => onSelectTicket && onSelectTicket(ticket)}
+      />
     </div>
   );
 }

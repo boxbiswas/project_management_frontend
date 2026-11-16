@@ -6,9 +6,10 @@ import {
   User,
   Calendar,
   GripVertical,
+  MessageSquare,
 } from 'lucide-react';
 
-export default function KanbanCard({ ticket, isGhost = false }) {
+export default function KanbanCard({ ticket, isGhost = false, onClick }) {
   const getPriorityConfig = (priority) => {
     switch (priority) {
       case 'high':
@@ -62,7 +63,10 @@ export default function KanbanCard({ ticket, isGhost = false }) {
 
   return (
     <div
-      className={`group relative bg-white rounded-xl border border-[#F5E6D3] border-l-[3px] ${priorityConfig.edgeClass} p-3.5 shadow-[0_1px_3px_rgba(124,45,18,0.05),0_1px_2px_rgba(124,45,18,0.06)] hover:border-[#E7D5BF] hover:shadow-[0_6px_16px_rgba(124,45,18,0.10)] transition-all select-none`}
+      onClick={onClick}
+      className={`group relative bg-white rounded-xl border border-[#F5E6D3] border-l-[3px] ${priorityConfig.edgeClass} p-3.5 shadow-[0_1px_3px_rgba(124,45,18,0.05),0_1px_2px_rgba(124,45,18,0.06)] hover:border-[#E7D5BF] hover:shadow-[0_6px_16px_rgba(124,45,18,0.10)] transition-all select-none ${
+        onClick ? 'cursor-pointer' : ''
+      }`}
     >
       {/* Top row: Priority badge and drag grip */}
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -86,7 +90,7 @@ export default function KanbanCard({ ticket, isGhost = false }) {
         </p>
       )}
 
-      {/* Footer: Assignee avatar and date */}
+      {/* Footer: Assignee avatar, comments, and date */}
       <div className="mt-3.5 pt-2.5 border-t border-[#F5E6D3] flex items-center justify-between text-xs text-[#78716C]">
         <div className="flex items-center gap-1.5 min-w-0">
           {ticket.assigneeId ? (
@@ -111,9 +115,18 @@ export default function KanbanCard({ ticket, isGhost = false }) {
           )}
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 text-[#A8A29E] text-[11px]">
-          <Calendar className="w-3 h-3 text-[#A8A29E]" />
-          <span>{formattedDate}</span>
+        <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-1 text-[#A8A29E] hover:text-[#EA580C] transition-colors"
+            title="Comments & activity"
+          >
+            <MessageSquare className="w-3 h-3" />
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0 text-[#A8A29E] text-[11px]">
+            <Calendar className="w-3 h-3 text-[#A8A29E]" />
+            <span>{formattedDate}</span>
+          </div>
         </div>
       </div>
     </div>

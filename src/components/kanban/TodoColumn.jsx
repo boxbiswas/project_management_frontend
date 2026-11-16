@@ -4,7 +4,12 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import DraggableTicketCard from './DraggableTicketCard.jsx';
 import { Circle, Plus } from 'lucide-react';
 
-export default function TodoColumn({ tickets = [], onAddTicket, canManage }) {
+export default function TodoColumn({
+  tickets = [],
+  onAddTicket,
+  canManage,
+  onSelectTicket,
+}) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'todo',
     data: { status: 'todo' },
@@ -50,7 +55,12 @@ export default function TodoColumn({ tickets = [], onAddTicket, canManage }) {
       <div className="flex-1 space-y-2.5 overflow-y-auto min-h-[140px] p-0.5">
         <SortableContext items={ticketIds} strategy={verticalListSortingStrategy}>
           {tickets.map((ticket) => (
-            <DraggableTicketCard key={ticket._id} ticket={ticket} disabled={!canManage} />
+            <DraggableTicketCard
+              key={ticket._id}
+              ticket={ticket}
+              disabled={!canManage}
+              onSelectTicket={onSelectTicket}
+            />
           ))}
         </SortableContext>
 

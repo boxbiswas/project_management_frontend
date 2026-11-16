@@ -20,7 +20,12 @@ import {
   rollbackTicketStatus,
 } from '../../redux/slices/ticketSlice.js';
 
-export default function KanbanBoard({ tickets = [], onAddTicket, canManage = true }) {
+export default function KanbanBoard({
+  tickets = [],
+  onAddTicket,
+  canManage = true,
+  onSelectTicket,
+}) {
   const dispatch = useDispatch();
   const [activeTicket, setActiveTicket] = useState(null);
 
@@ -108,16 +113,19 @@ export default function KanbanBoard({ tickets = [], onAddTicket, canManage = tru
           tickets={todoTickets}
           onAddTicket={onAddTicket}
           canManage={canManage}
+          onSelectTicket={onSelectTicket}
         />
         <InProgressColumn
           tickets={inProgressTickets}
           onAddTicket={onAddTicket}
           canManage={canManage}
+          onSelectTicket={onSelectTicket}
         />
         <DoneColumn
           tickets={doneTickets}
           onAddTicket={onAddTicket}
           canManage={canManage}
+          onSelectTicket={onSelectTicket}
         />
       </div>
 

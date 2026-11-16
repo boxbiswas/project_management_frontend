@@ -21,12 +21,14 @@ export const fetchUserTickets = createAsyncThunk(
   }
 );
 
-// Fetch tickets for a specific project
+// Fetch tickets for a specific project with optional filter params
 export const fetchTicketsByProject = createAsyncThunk(
   'tickets/fetchTicketsByProject',
-  async (projectId, { rejectWithValue }) => {
+  async (args, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/projects/${projectId}/tickets`);
+      const projectId = typeof args === 'string' ? args : args.projectId;
+      const params = typeof args === 'object' && args.params ? args.params : {};
+      const response = await api.get(`/projects/${projectId}/tickets`, { params });
       return response.data.tickets;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch tickets');
@@ -157,11 +159,16 @@ const ticketSlice = createSlice({
       if (index !== -1) {
         state.tickets[index] = action.payload;
       }
+      const userIndex = state.userTickets.findIndex((t) => t._id === action.payload._id);
+      if (userIndex !== -1) {
+        state.userTickets[userIndex] = action.payload;
+      }
     });
 
     // Delete ticket
     builder.addCase(deleteTicket.fulfilled, (state, action) => {
       state.tickets = state.tickets.filter((t) => t._id !== action.payload);
+      state.userTickets = state.userTickets.filter((t) => t._id !== action.payload);
     });
   },
 });
