@@ -52,19 +52,19 @@ BugBoard eliminates clutter and provides software engineering teams with an intu
 
 ```mermaid
 flowchart TD
-    User([User Action])
-    Router[React Router 7 Routes]
-    Guard{Authenticated?}
-    AuthPages[LoginPage / RegisterPage]
-    Dashboard[DashboardLayout Shell]
-    Views{Active Tab}
-    BoardView[KanbanBoard Component]
-    ListView[TicketList Component]
-    FilterBar[TicketFilterBar Component]
-    Modals[Modals: Ticket Details / Edit / Delete / Members]
-    ReduxStore[(Redux Toolkit Store)]
-    Axios[Axios Instance withCredentials]
-    BackendAPI[(Express 5 Backend API)]
+    User(["User Action"])
+    Router["React Router 7 Routes"]
+    Guard{"Authenticated?"}
+    AuthPages["Login and Register Pages"]
+    Dashboard["DashboardLayout Shell"]
+    Views{"Active Tab Selection"}
+    BoardView["KanbanBoard Component"]
+    ListView["TicketList Component"]
+    FilterBar["TicketFilterBar Component"]
+    Modals["Ticket Modals (Details, Edit, Delete, Members)"]
+    ReduxStore[("Redux Toolkit Store")]
+    Axios["Axios Instance (withCredentials)"]
+    BackendAPI[("Express 5 Backend API")]
 
     User --> Router
     Router --> Guard
@@ -74,8 +74,8 @@ flowchart TD
     Dashboard --> Views
     Views -->|Board Tab| BoardView
     Views -->|List Tab| ListView
-    BoardView -->|Drag Card / Click| Modals
-    ListView -->|Click Card| Modals
+    BoardView -->|Inspect Card| Modals
+    ListView -->|Inspect Card| Modals
     BoardView -->|Optimistic Drag| ReduxStore
     FilterBar -->|Filter Change| Views
     Modals -->|Action Dispatch| ReduxStore
