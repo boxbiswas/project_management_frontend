@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, clearError } from '../../redux/slices/authSlice.js';
 import { Eye, EyeOff, AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 // Validation regexes
 const universalNameRegex = /^[a-zA-Z\u00C0-\u017F]+(?:\s[a-zA-Z\u00C0-\u017F]+)*$/;
@@ -97,7 +98,11 @@ export default function RegisterForm() {
     );
 
     if (registerUser.fulfilled.match(result)) {
-      navigate('/', { replace: true });
+      toast.success('Registration successful! Please log in to continue.');
+      navigate('/login', {
+        replace: true,
+        state: { registeredEmail: formData.email.trim().toLowerCase() },
+      });
     }
   };
 

@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError } from '../../redux/slices/authSlice.js';
-import { Eye, EyeOff, AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { loading, error: serverError } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
-    email: '',
+    email: location.state?.registeredEmail || '',
     password: '',
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [registrationNotice, setRegistrationNotice] = useState(
+    location.state?.registeredEmail ? 'Account created successfully! Please sign in with your credentials.' : null
+  );
 
   // Client-side field validation logic
   const validate = () => {
@@ -43,6 +47,9 @@ export default function LoginForm() {
     }
     if (serverError) {
       dispatch(clearError());
+    }
+    if (registrationNotice) {
+      setRegistrationNotice(null);
     }
   };
 
@@ -73,6 +80,14 @@ export default function LoginForm() {
         <h2 className="text-2xl font-bold text-[#292524] tracking-tight">Sign in to BugBoard</h2>
         <p className="text-sm text-[#78716C] mt-1">Welcome back! Please enter your details</p>
       </div>
+
+      {/* Registration success notice banner */}
+      {registrationNotice && (
+        <div className="mb-5 p-3.5 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0] flex items-start gap-2.5 text-[#166534] text-sm">
+          <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-[#16a34a]" />
+          <span>{registrationNotice}</span>
+        </div>
+      )}
 
       {/* Server error alert banner */}
       {serverError && (
